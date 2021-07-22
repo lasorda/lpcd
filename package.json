@@ -1,0 +1,163 @@
+{
+    "name": "lpcd",
+    "displayName": "lpcd",
+    "description": "A LPC language's Highlights, Snippets, Completion and Definition-Jump Plugin.",
+    "version": "0.0.1",
+    "license": "MIT",
+    "publisher": "panzhihao",
+    "engines": {
+        "vscode": "^1.58.0"
+    },
+    "categories": [
+        "Programming Languages",
+		"Snippets"
+    ],
+    "activationEvents": [
+        "onLanguage:lpc"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "keybindings": [
+            {
+                "command": "lpcd.compile",
+                "key": "f5",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.update_file",
+                "key": "f6",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_1000",
+                "key": "f9",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.call_func",
+                "key": "f10",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_10",
+                "key": "alt+1",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_20",
+                "key": "alt+2",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_40",
+                "key": "alt+3",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_80",
+                "key": "alt+4",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_160",
+                "key": "alt+5",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_320",
+                "key": "alt+6",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "lpcd.remote_tail_debug_640",
+                "key": "alt+7",
+                "when": "editorTextFocus"
+            }
+        ],
+        "configurationDefaults": {
+            "[lpc]": {
+                "editor.snippetSuggestions": "bottom"
+            }
+        },
+        "languages": [
+            {
+                "id": "lpc",
+                "aliases": [
+                    "LPC",
+                    "lpc"
+                ],
+                "extensions": [
+                    ".c",
+                    ".h"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "lpc",
+                "scopeName": "source.lpc",
+                "path": "./syntaxes/lpc.tmLanguage"
+            }
+        ],
+        "snippets": [],
+        "configuration": {
+            "type": "object",
+            "title": "lpcd configuration",
+            "properties": {
+                "lpcd.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable lpcd extension"
+                },
+                "lpcd.workspace": {
+                    "type": "string",
+                    "default": "newtxii",
+                    "description": "lpc workspace root keyword"
+                },
+                "lpcd.complie": {
+                    "type": "string",
+                    "default": "lpc_compile",
+                    "description": "lpc_complie test.c at lib generate symbol info at lib/.symbol, return 0 for succ"
+                },
+                "lpcd.efunc": {
+                    "type": "array",
+                    "default": [
+                        "/etc/efun_define.c",
+                        "/sys/object/simul_efun.c"
+                    ],
+                    "description": "efun_define for engine defined function, simul_efun for global function"
+                },
+                "lpcd.include": {
+                    "type": "string",
+                    "default": "inc",
+                    "description": "lpc default include path"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "yarn run compile && yarn run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.58.0",
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.2.2",
+        "@types/node": "14.x",
+        "eslint": "^7.27.0",
+        "@typescript-eslint/eslint-plugin": "^4.26.0",
+        "@typescript-eslint/parser": "^4.26.0",
+        "glob": "^7.1.7",
+        "mocha": "^8.4.0",
+        "typescript": "^4.3.2",
+        "vscode-test": "^1.5.2"
+    },
+    "dependencies": {
+        "sscanf": "^0.8.0"
+    }
+}
