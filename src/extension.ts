@@ -1,4 +1,3 @@
-import { kStringMaxLength } from 'buffer';
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -8,7 +7,7 @@ var sscanf = require('sscanf');
 
 const cocLpcConfig = vscode.workspace.getConfiguration('coc-lpcd');
 const workspaceStr = cocLpcConfig.get<string>("workspace", "newtxii");
-const complieCommand = cocLpcConfig.get<string>("complie", "compile");
+const complieCommand = cocLpcConfig.get<string>("complie", "lpc_compile");
 const efuncObjects = cocLpcConfig.get<Array<string>>('efunc', ["/etc/efun_define.c", "/sys/object/simul_efun.c"]);
 
 var projectFolder: string = "";
@@ -54,9 +53,6 @@ function complie(filename: string): Boolean {
 const symbolDir = 'log/symbol/';
 
 function loadSymbol(filename: string) {
-    if (filename.startsWith("/")) {
-        filename = filename.substring(1);
-    }
     filename = filename.replace(/\//g, "#");
     let absFilename = path.resolve(projectFolder, symbolDir, filename);
     if (!fs.existsSync(absFilename)) {
@@ -246,6 +242,9 @@ var fileSymbolCache: { [key: string]: FileSymbol } = {};
 var fileSymbolCacheTime: { [key: string]: number } = {};
 
 function generateFileSymbol(filename: string): FileSymbol {
+    if (filename.startsWith("/")) {
+        filename = filename.substring(1);
+    }
     let fileSymbol: FileSymbol = { defined: [], include: [], variable: [], func: [], childFileSymbol: {}, lineno: 0 };
     if (filename in fileSymbolCacheTime && (Date.now() / 1000 - fileSymbolCacheTime[filename] < 1)) {
         return fileSymbolCache[filename];
@@ -652,7 +651,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
         lastdotcfile = filename;
     }
     else if (filename.endsWith(".h") && lastdotcfile.length) {
-        // when deal with .h file, try best find 
+        // when deal with .h file, try best find
         filename = lastdotcfile;
     }
 
@@ -786,7 +785,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
 
     for (let index = 0; index < efuncObjects.length; index++) {
         const efuncFile = efuncObjects[index];
-        for (const func of getDefineFunction(efuncFile, position.line, true)) {
+        for (const func of getDefineFunction(efuncFile, -1, true)) {
             if (func.name === word) {
                 return {
                     uri: vscode.Uri.file(path.resolve(projectFolder, func.filename)),

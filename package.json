@@ -2,7 +2,7 @@
     "name": "lpcd",
     "displayName": "lpcd",
     "description": "A LPC language's Highlights, Snippets, Completion and Definition-Jump Plugin.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "publisher": "panzhihao",
     "engines": {
