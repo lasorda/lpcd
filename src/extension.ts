@@ -835,7 +835,7 @@ function lpcCompile() {
         return;
     }
     let relativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
-    let cmd = `cd ${projectFolder}/../engine && ./txos -b -f -C $(find . -name 'config\.[0-9]*') -a ${relativePath} 2>&1 | grep -v "^$"`;
+    let cmd = `bash -i -c 'cd ${projectFolder}; ${complieCommand} ${relativePath} 2>&1'`;
     child_process.exec(cmd, function (error: any, stdout: string, stderr: string) {
         vscode.window.showQuickPick(stdout.split("\n"), { "placeHolder": "press ESC to exit" });
     });
