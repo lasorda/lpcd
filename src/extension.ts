@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-var sscanf = require('sscanf');
+import * as scanf from 'scanf';
 
-const cocLpcConfig = vscode.workspace.getConfiguration('coc-lpcd');
+const cocLpcConfig = vscode.workspace.getConfiguration('lpcd');
 const workspaceStr = cocLpcConfig.get<string>("workspace", "newtxii");
 const complieCommand = cocLpcConfig.get<string>("complie", "lpc_compile");
 const efuncObjects = cocLpcConfig.get<Array<string>>('efunc', ["/etc/efun_define.c", "/sys/object/simul_efun.c"]);
@@ -36,7 +36,7 @@ function initProjectFolder() {
         projectFolder = curPath.slice(0, pos + `${workspaceStr}/`.length);
         inc = path.resolve(projectFolder, cocLpcConfig.get<string>('include', "inc"));
     }
-    debug(`coc-lpcd init with workspace:${workspaceStr} complie:${complieCommand} include:${inc} efunc:${efuncObjects}`);
+    debug(`lpcd init with workspace:${workspaceStr} complie:${complieCommand} include:${inc} efunc:${efuncObjects}`);
 };
 
 function complie(filename: string): Boolean {
@@ -114,7 +114,7 @@ function parse(filename: string, symbolInfo: string) {
     lineInfo.forEach(line => {
         if (line.length === 0) { return; }
 
-        let lineSymbol: LineSymbol = sscanf(line, "%d %s %d %S", 'op', 'filename', 'lineno', 'detail');
+        let lineSymbol: LineSymbol = scanf.sscanf(line, "%d %s %d %S", 'op', 'filename', 'lineno', 'detail') as LineSymbol;
         let targetSymbol: FileSymbol | undefined = fileSymbol;
 
         if (!lineSymbol.detail) { lineSymbol.detail = ""; }
