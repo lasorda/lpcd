@@ -1,0 +1,150 @@
+{
+    "Do while loop": {
+        "prefix": "do",
+        "body": [
+            "do {",
+            "  ${0:// body}",
+            "} while (${1:true});"
+        ]
+    },
+    "Foreach key/value Loop": {
+        "prefix": "forek",
+        "body": [
+            "foreach (${2:mixed key}, ${3:mixed value} in ${1:mapping m}) {",
+            "  ${0://body}",
+            "}"
+        ]
+    },
+    "While loop": {
+        "prefix": "whi",
+        "body": [
+            "while (${1:true}) {",
+            "  ${2:// body}",
+            "}"
+        ]
+    },
+    "Foreach Loop": {
+        "prefix": "fore",
+        "body": [
+            "foreach (${2:mixed item} in ${1:mixed *array}) {",
+            "  ${0:// Body}",
+            "}"
+        ]
+    },
+    "Switch": {
+        "prefix": "sw",
+        "body": [
+            "switch (${1})",
+            "{",
+            "  case ${2}:",
+            "    ${3}",
+            "    break;",
+            "",
+            "  default:",
+            "    ${4}",
+            "    break;",
+            "}"
+        ]
+    },
+    "For loop": {
+        "prefix": "for",
+        "body": [
+            "for (${1:int i}; ${2:i} < ${3:?}; i++) {",
+            "  ${4:// Body}",
+            "}"
+        ]
+    },
+    "object": {
+        "prefix": "object",
+        "body": "object"
+    },
+    "case": {
+        "prefix": "case",
+        "body": "case ${1:what}:"
+    },
+    "public": {
+        "prefix": "public",
+        "body": "public ${1}"
+    },
+    "break": {
+        "prefix": "break",
+        "body": "break"
+    },
+    "include": {
+        "prefix": "include",
+        "body": "#include <${1:string file}>"
+    },
+    "inherit": {
+        "prefix": "inherit",
+        "body": "inherit ${1:What} ;"
+    },
+    "mapping": {
+        "prefix": "mapping",
+        "body": "mapping"
+    },
+    "void": {
+        "prefix": "void",
+        "body": "void"
+    },
+    "default": {
+        "prefix": "default",
+        "body": "default: "
+    },
+    "mixed": {
+        "prefix": "mixed",
+        "body": "mixed"
+    },
+    "private": {
+        "prefix": "private",
+        "body": "private"
+    },
+    "protected": {
+        "prefix": "protected",
+        "body": "protected"
+    },
+    "class": {
+        "prefix": "class",
+        "body": "class "
+    },
+    "continue": {
+        "prefix": "continue",
+        "body": "continue"
+    },
+    "string": {
+        "prefix": "string",
+        "body": "string"
+    },
+    "__FILE__": {
+        "prefix": "__FILE__",
+        "body": "__FILE__"
+    },
+    "__DIR__": {
+        "prefix": "__DIR__",
+        "body": "__DIR__"
+    },
+    "return": {
+        "prefix": "return",
+        "body": "return"
+    },
+    "int": {
+        "prefix": "int",
+        "body": "int"
+    },
+    "float": {
+        "prefix": "float",
+        "body": "float"
+    },
+    "function": {
+        "prefix": "function",
+        "body": "function"
+    },
+    "Create method": {
+        "prefix": "func",
+        "body": [
+            "${1:void} ${2:method_name}(${3:args})",
+            "{",
+            "    ${4}",
+            "}"
+        ]
+    }
+}

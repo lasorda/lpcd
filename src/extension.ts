@@ -10,8 +10,8 @@ const workspaceStr = cocLpcConfig.get<string>("workspace", "newtxii");
 const complieCommand = cocLpcConfig.get<string>("complie", "lpc_compile");
 const efuncObjects = cocLpcConfig.get<Array<string>>('efunc', ["/etc/efun_define.c", "/sys/object/simul_efun.c"]);
 
-var projectFolder: string = "";
-var inc: string = "";
+let projectFolder = "";
+let inc = "";
 
 function debug(message: any, ...args: any) {
     console.log(message, ...args);
@@ -29,20 +29,20 @@ function initProjectFolder() {
     if (vscode.workspace.workspaceFolders === undefined) {
         return;
     }
-    let curPath = vscode.workspace.workspaceFolders[0].uri.path.toString();
-    let pos = curPath.lastIndexOf(workspaceStr);
+    const curPath = vscode.workspace.workspaceFolders[0].uri.path.toString();
+    const pos = curPath.lastIndexOf(workspaceStr);
 
     if (pos >= 0) {
         projectFolder = curPath.slice(0, pos + `${workspaceStr}/`.length);
         inc = path.resolve(projectFolder, cocLpcConfig.get<string>('include', "inc"));
     }
     debug(`lpcd init with workspace:${workspaceStr} complie:${complieCommand} include:${inc} efunc:${efuncObjects}`);
-};
+}
 
-function complie(filename: string): Boolean {
+function complie(filename: string): boolean {
     try {
         // too ugly
-        child_process.execSync(`bash -i -c 'cd ${projectFolder}; mv log/debug.log log/bak.log; ${complieCommand} ${filename}; mv log/debug.log log/complie.log ; mv log/bak.log log/debug.log'`, {stdio: "pipe" });
+        child_process.execSync(`bash -i -c 'cd ${projectFolder}; mv log/debug.log log/bak.log; ${complieCommand} ${filename}; mv log/debug.log log/complie.log ; mv log/bak.log log/debug.log'`, { stdio: "pipe" });
         return true;
     } catch (e) {
         debug(e);
@@ -54,7 +54,7 @@ const symbolDir = 'log/symbol/';
 
 function loadSymbol(filename: string) {
     filename = filename.replace(/\//g, "#");
-    let absFilename = path.resolve(projectFolder, symbolDir, filename);
+    const absFilename = path.resolve(projectFolder, symbolDir, filename);
     if (!fs.existsSync(absFilename)) {
         return "";
     }
@@ -78,7 +78,7 @@ interface LineSymbol {
     detail: string,
 }
 
-interface Symbol {
+interface ESymbol {
     name: string,
     line: number,
     filename: string,
@@ -89,16 +89,16 @@ interface Symbol {
 
 interface FileSymbol {
     lineno: number;
-    defined: Symbol[],
-    include: Symbol[],
-    variable: Symbol[],
-    func: Symbol[],
+    defined: ESymbol[],
+    include: ESymbol[],
+    variable: ESymbol[],
+    func: ESymbol[],
     childFileSymbol: { [key: string]: FileSymbol },
 }
 
 function parse(filename: string, symbolInfo: string) {
-    let lineInfo = symbolInfo.split('\n');
-    let fileSymbol: FileSymbol = {
+    const lineInfo = symbolInfo.split('\n');
+    const fileSymbol: FileSymbol = {
         defined: [],
         include: [],
         variable: [],
@@ -108,13 +108,13 @@ function parse(filename: string, symbolInfo: string) {
     };
     let localArgs: string[] = [];
     let currentLine = 0;
-    let hasIncluded = new Set();
-    let lastFunction: Symbol | null = null;
+    const hasIncluded = new Set();
+    let lastFunction: ESymbol | null = null;
 
     lineInfo.forEach(line => {
         if (line.length === 0) { return; }
 
-        let lineSymbol: LineSymbol = scanf.sscanf(line, "%d %s %d %S", 'op', 'filename', 'lineno', 'detail') as LineSymbol;
+        const lineSymbol: LineSymbol = scanf.sscanf(line, "%d %s %d %S", 'op', 'filename', 'lineno', 'detail') as LineSymbol;
         let targetSymbol: FileSymbol | undefined = fileSymbol;
 
         if (!lineSymbol.detail) { lineSymbol.detail = ""; }
@@ -146,10 +146,10 @@ function parse(filename: string, symbolInfo: string) {
                         hasIncluded.add(lineSymbol.filename);
                     }
                     break;
-                case OP.pDefine:
+                case OP.pDefine: {
                     let hasArgs = 0;
-                    let define = lineSymbol.detail.trim();
-                    let spacePos = define.search(`\\s+`);
+                    const define = lineSymbol.detail.trim();
+                    const spacePos = define.search(`\\s+`);
 
                     for (let index = 0; index < spacePos; index++) {
                         const element = define[index];
@@ -192,6 +192,8 @@ function parse(filename: string, symbolInfo: string) {
                         }
                     }
                     break;
+                }
+
                 case OP.pVar:
                     targetSymbol.variable.push({
                         name: lineSymbol.detail,
@@ -215,7 +217,7 @@ function parse(filename: string, symbolInfo: string) {
                         lastFunction.op.push(lineSymbol);
                     }
                     break;
-                case OP.pPop:
+                case OP.pPop: {
                     let n = parseInt(lineSymbol.detail);
                     while (localArgs.length > 0 && n > 0) {
                         localArgs.pop();
@@ -225,6 +227,7 @@ function parse(filename: string, symbolInfo: string) {
                         lastFunction.op.push(lineSymbol);
                     }
                     break;
+                }
                 case OP.pFree:
                     localArgs = [];
                     if (lastFunction && lastFunction.op) {
@@ -238,8 +241,8 @@ function parse(filename: string, symbolInfo: string) {
     return fileSymbol;
 }
 
-var fileSymbolCache: { [key: string]: FileSymbol } = {};
-var fileSymbolCacheTime: { [key: string]: number } = {};
+const fileSymbolCache: { [key: string]: FileSymbol } = {};
+const fileSymbolCacheTime: { [key: string]: number } = {};
 
 function generateFileSymbol(filename: string): FileSymbol {
     if (filename.startsWith("/")) {
@@ -254,7 +257,7 @@ function generateFileSymbol(filename: string): FileSymbol {
         if (filename in fileSymbolCache) { return fileSymbolCache[filename]; }
         return fileSymbol;
     }
-    let res = loadSymbol(filename);
+    const res = loadSymbol(filename);
     fileSymbol = parse(filename, res);
     fileSymbolCache[filename] = fileSymbol;
     fileSymbolCacheTime[filename] = Date.now() / 1000;
@@ -264,9 +267,9 @@ function generateFileSymbol(filename: string): FileSymbol {
 /**
  * for object call function completion
  */
-function getDefineFunction(filename: string, line: number, includeChild: Boolean): Symbol[] {
-    let ret: Symbol[] = [];
-    let fileSymbol = generateFileSymbol(filename);
+function getDefineFunction(filename: string, line: number, includeChild: boolean): ESymbol[] {
+    const ret: ESymbol[] = [];
+    const fileSymbol = generateFileSymbol(filename);
 
     fileSymbol.func.forEach(func => {
         if (line < 0 || func.line <= line) {
@@ -275,8 +278,8 @@ function getDefineFunction(filename: string, line: number, includeChild: Boolean
     });
 
     if (includeChild) {
-        for (var file in fileSymbol.childFileSymbol) {
-            let childSymbol = fileSymbol.childFileSymbol[file];
+        for (const file in fileSymbol.childFileSymbol) {
+            const childSymbol = fileSymbol.childFileSymbol[file];
             if (line < 0 || childSymbol.lineno <= line) {
                 ret.push(...childSymbol.func);
             }
@@ -288,17 +291,17 @@ function getDefineFunction(filename: string, line: number, includeChild: Boolean
 /**
  * include efun and simul_efun, for completion in this file
  */
-function getVisibleFunction(filename: string, line: number): Symbol[] {
-    let res = getDefineFunction(filename, line, true);
+function getVisibleFunction(filename: string, line: number): ESymbol[] {
+    const res = getDefineFunction(filename, line, true);
     efuncObjects.forEach(efuncFile => {
         res.push(...getDefineFunction(prettyFilename(efuncFile), -1, true));
     });
     return res;
 }
 
-function getMacroDefine(filename: string, line: number, includeChild: Boolean): Symbol[] {
-    let ret: Symbol[] = [];
-    let fileSymbol = generateFileSymbol(filename);
+function getMacroDefine(filename: string, line: number, includeChild: boolean): ESymbol[] {
+    const ret: ESymbol[] = [];
+    const fileSymbol = generateFileSymbol(filename);
 
     fileSymbol.defined.forEach(defined => {
         if (line < 0 || defined.line <= line) {
@@ -307,8 +310,8 @@ function getMacroDefine(filename: string, line: number, includeChild: Boolean): 
     });
 
     if (includeChild) {
-        for (var file in fileSymbol.childFileSymbol) {
-            let childSymbol = fileSymbol.childFileSymbol[file];
+        for (const file in fileSymbol.childFileSymbol) {
+            const childSymbol = fileSymbol.childFileSymbol[file];
 
             if (line < 0 || childSymbol.lineno <= line) {
                 ret.push(...childSymbol.defined);
@@ -318,9 +321,9 @@ function getMacroDefine(filename: string, line: number, includeChild: Boolean): 
     return ret;
 }
 
-function getGlobalVariable(filename: string, line: number, includeChild: Boolean): Symbol[] {
-    let ret: Symbol[] = [];
-    let fileSymbol = generateFileSymbol(filename);
+function getGlobalVariable(filename: string, line: number, includeChild: boolean): ESymbol[] {
+    const ret: ESymbol[] = [];
+    const fileSymbol = generateFileSymbol(filename);
 
     fileSymbol.variable.forEach(variable => {
         if (line < 0 || variable.line <= line) {
@@ -329,8 +332,8 @@ function getGlobalVariable(filename: string, line: number, includeChild: Boolean
     });
 
     if (includeChild) {
-        for (var file in fileSymbol.childFileSymbol) {
-            let childSymbol = fileSymbol.childFileSymbol[file];
+        for (const file in fileSymbol.childFileSymbol) {
+            const childSymbol = fileSymbol.childFileSymbol[file];
 
             if (line < 0 || childSymbol.lineno <= line) {
                 ret.push(...childSymbol.variable);
@@ -340,10 +343,10 @@ function getGlobalVariable(filename: string, line: number, includeChild: Boolean
     return ret;
 }
 
-function getLocalVariable(filename: string, lineAt: number): Symbol[] {
-    let localArgs: Symbol[] = [];
-    let fileSymbol = generateFileSymbol(filename);
-    let lastFunction: Symbol | null = null;
+function getLocalVariable(filename: string, lineAt: number): ESymbol[] {
+    let localArgs: ESymbol[] = [];
+    const fileSymbol = generateFileSymbol(filename);
+    let lastFunction: ESymbol | null = null;
 
     for (let index = 0; index < fileSymbol.func.length; index++) {
         const func = fileSymbol.func[index];
@@ -372,13 +375,14 @@ function getLocalVariable(filename: string, lineAt: number): Symbol[] {
                         filename: lineSymbol.filename
                     });
                     break;
-                case OP.pPop:
+                case OP.pPop: {
                     let n = parseInt(lineSymbol.detail);
                     while (localArgs.length > 0 && n > 0) {
                         localArgs.pop();
                         n--;
                     }
                     break;
+                }
                 case OP.pFree:
                     localArgs = [];
                     break;
@@ -393,8 +397,8 @@ function getLine(document: vscode.TextDocument, line: number): string {
     return document.lineAt(line).text;
 }
 
-var completionCache: { [key: string]: vscode.CompletionItem[] } = {};
-var completionCacheTime: { [key: string]: number } = {};
+const completionCache: { [key: string]: vscode.CompletionItem[] } = {};
+const completionCacheTime: { [key: string]: number } = {};
 
 function provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
     const line = getLine(document, position.line);
@@ -404,19 +408,19 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
     // #include <
     reg = /#include\s+?(<)\w*?$/;
     if (reg.test(lineText)) {
-        let result = getFileAndDir(inc);
+        const result = getFileAndDir(inc);
         return result;
     }
 
     // #include "
-    reg = /#include\s+?(\")([\w|\/]*?)$/;
+    reg = /#include\s+?(")([\w|/]*?)$/;
     if (reg.test(lineText)) {
-        let execResult = reg.exec(lineText);
-        let result: vscode.CompletionItem[] = [];
+        const execResult = reg.exec(lineText);
+        const result: vscode.CompletionItem[] = [];
 
         if (execResult) {
             if (execResult[2].search('/') === -1) { result.push(...getFileAndDir(inc)); }
-            let dir = execResult[2].split("/");
+            const dir = execResult[2].split("/");
             let target = "";
 
             dir.pop();
@@ -432,11 +436,11 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
     }
 
     // "cmd/"
-    reg = /(\")([\w\/]*)$/;
+    reg = /(")([\w/]*)$/;
     if (reg.test(lineText)) {
-        let execResult = reg.exec(lineText);
+        const execResult = reg.exec(lineText);
         if (execResult !== null) {
-            let dir = execResult[2].split("/");
+            const dir = execResult[2].split("/");
             dir.pop();
             return getFileAndDir(path.resolve(projectFolder, ...dir));
         }
@@ -444,9 +448,9 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
     }
 
     // object call
-    reg = /([\w\/\"\.]+|this_object\(\))->$/;
+    reg = /([\w/".]+|this_object\(\))->$/;
     if (reg.test(lineText)) {
-        let execResult = reg.exec(lineText);
+        const execResult = reg.exec(lineText);
         let file = "";
         if (execResult === null) { return []; }
         if (execResult[1] === 'this_object()') {
@@ -455,7 +459,7 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
             file = execResult[1];
         }
         if (!file.startsWith("\"")) {
-            let define = getMacroDefine(getFileRelativePath(document.uri), position.line, true);
+            const define = getMacroDefine(getFileRelativePath(document.uri), position.line, true);
             for (let index = 0; index < define.length; index++) {
                 const def = define[index];
                 if (def.name === execResult[1] && def.detail) {
@@ -464,8 +468,8 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
             }
         }
         file = prettyFilename(file.substring(1, file.length - 1));
-        let res: vscode.CompletionItem[] = [];
-        let allFunction = getDefineFunction(file, -1, true);
+        const res: vscode.CompletionItem[] = [];
+        const allFunction = getDefineFunction(file, -1, true);
         for (let index = 0; index < allFunction.length; index++) {
             const func = allFunction[index];
             res.push({
@@ -480,14 +484,14 @@ function provideCompletionItems(document: vscode.TextDocument, position: vscode.
     if (lineText.endsWith(">")) { return []; }
 
     // call this file
-    let filename = getFileRelativePath(document.uri);
+    const filename = getFileRelativePath(document.uri);
 
     if (filename in completionCache && filename in completionCacheTime
         && Date.now() / 1000 - completionCacheTime[filename] < 5) {
         return completionCache[filename];
     }
 
-    let res: vscode.CompletionItem[] = [];
+    const res: vscode.CompletionItem[] = [];
     for (const local of getLocalVariable(filename, position.line)) {
         res.push({
             label: local.name,
@@ -550,19 +554,19 @@ function prettyFilename(filename: string): string {
 }
 
 function getFileAndDir(dirPath: string): vscode.CompletionItem[] {
-    let output: vscode.CompletionItem[] = [];
+    const output: vscode.CompletionItem[] = [];
 
     if (!fs.existsSync(dirPath)) { return output; }
 
-    let files = fs.readdirSync(dirPath);
+    const files = fs.readdirSync(dirPath);
 
     for (let i = 0; i < files.length; ++i) {
         let filedir = path.join(dirPath, files[i]);
-        let stats = fs.statSync(filedir);
+        const stats = fs.statSync(filedir);
 
         if (stats === null) { return []; }
-        let isFile = stats.isFile();
-        let isDir = stats.isDirectory();
+        const isFile = stats.isFile();
+        const isDir = stats.isDirectory();
         if (isFile && (filedir.search('\\.c') !== -1 || filedir.search('\\.h') !== -1)) {
             filedir = filedir.replace(dirPath, "").replace(/\\/g, '/').substr(1);
             output.push({ label: filedir, kind: vscode.CompletionItemKind.File, insertText: filedir });
@@ -578,12 +582,12 @@ function getFileAndDir(dirPath: string): vscode.CompletionItem[] {
         }
     }
     return output;
-};
+}
 
 function searchInLine(line: string, word: string): number {
-    let reg = new RegExp(`\\b${word}\\b`);
+    const reg = new RegExp(`\\b${word}\\b`);
     if (reg.test(line)) {
-        let execResult = reg.exec(line);
+        const execResult = reg.exec(line);
         if (execResult) {
             return execResult["index"];
         }
@@ -591,11 +595,11 @@ function searchInLine(line: string, word: string): number {
     return 0;
 }
 
-var fileContextCache: { [key: string]: string[] } = {};
-var fileContextCacheTime: { [key: string]: number } = {};
+const fileContextCache: { [key: string]: string[] } = {};
+const fileContextCacheTime: { [key: string]: number } = {};
 
 function getRangeofWordInFileLine(filename: string, line: number, word: string): vscode.Range {
-    let res = { start: { line: line, character: 0 }, end: { line: line, character: 0 } };
+    const res = { start: { line: line, character: 0 }, end: { line: line, character: 0 } };
     let filelines: string[] = [];
 
     if (fs.existsSync(filename)) {
@@ -609,18 +613,18 @@ function getRangeofWordInFileLine(filename: string, line: number, word: string):
         }
     }
     if (line < filelines.length && filename.length > 0) {
-        let linePos = searchInLine(filelines[line], word);
+        const linePos = searchInLine(filelines[line], word);
         res.start.character = linePos;
         res.start.character = linePos;
     }
     return new vscode.Range(new vscode.Position(res.start.line, res.start.character), new vscode.Position(res.end.line, res.end.character));
 }
 
-var lastdotcfile: string = "";
+let lastdotcfile = "";
 
 function getWordRangeAtPosition(document: vscode.TextDocument, position: vscode.Position): vscode.Range {
-    let line = getLine(document, position.line);
-    let lineNumber = position.line;
+    const line = getLine(document, position.line);
+    const lineNumber = position.line;
     let left = position.character, right = position.character;
     while (left >= 0 && ((line[left] >= 'a' && line[left] <= 'z')
         || (line[left] >= 'A' && line[left] <= 'Z')
@@ -645,7 +649,7 @@ function getWordRangeAtPosition(document: vscode.TextDocument, position: vscode.
 function provideDefinition(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.Definition> {
     const word = document.getText(getWordRangeAtPosition(document, position));
     const lineText = getLine(document, position.line);
-    var filename = getFileRelativePath(document.uri);
+    let filename = getFileRelativePath(document.uri);
 
     if (filename.endsWith(".c")) {
         lastdotcfile = filename;
@@ -657,7 +661,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
 
     // -> call jump
     let reg = new RegExp(`([\\w\\/\\"\\.]+|this_object\\(\\))->${word.replace(/\//g, '\\/')}\\(`);
-    let execResult = reg.exec(lineText);
+    const execResult = reg.exec(lineText);
     if (execResult !== null && execResult[1] !== null
         && execResult["index"] + execResult[1].length + 2 <= position.character
         && execResult["index"] + execResult[1].length + word.length >= position.character - 1) {
@@ -670,7 +674,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
         }
 
         if (!from.startsWith("\"")) {
-            let define = getMacroDefine(filename, position.line, true);
+            const define = getMacroDefine(filename, position.line, true);
             for (let index = 0; index < define.length; index++) {
                 const def = define[index];
                 if (def.name === from && def.detail) {
@@ -683,7 +687,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
         if (!from.startsWith("\"") || !from.endsWith("\"")) { return; }
         from = prettyFilename(from.substring(1, from.length - 1));
         if (!fs.existsSync(path.resolve(projectFolder, from))) { return; }
-        let definefunc = getDefineFunction(from, -1, true);
+        const definefunc = getDefineFunction(from, -1, true);
         for (let index = 0; index < definefunc.length; index++) {
             const func = definefunc[index];
             if (func.name === word) {
@@ -696,11 +700,11 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
     }
 
     // #include <
-    reg = /#include\s+?<([\w|\/|\.]+)*?>(\s+)?/;
+    reg = /#include\s+?<([\w|/|.]+)*?>(\s+)?/;
     if (reg.test(lineText)) {
-        let execResult = reg.exec(lineText);
+        const execResult = reg.exec(lineText);
         if (execResult) {
-            let uri = path.resolve(inc, execResult[1]);
+            const uri = path.resolve(inc, execResult[1]);
             if (fs.existsSync(uri)) {
                 return {
                     uri: vscode.Uri.file(uri),
@@ -712,9 +716,9 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
     }
 
     // #include "
-    reg = /#include\s+?\"([\w|\/|\.]+)*?\"(\s+)?/;
+    reg = /#include\s+?"([\w|/|.]+)*?"(\s+)?/;
     if (reg.test(lineText)) {
-        let execResult = reg.exec(lineText);
+        const execResult = reg.exec(lineText);
 
         if (execResult) {
             let target = execResult[1];
@@ -749,7 +753,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
 
     // "cmd/"
     if (word.search(/\//) !== -1) {
-        let target = prettyFilename(word);
+        const target = prettyFilename(word);
         return {
             uri: vscode.Uri.file(path.resolve(projectFolder, target)),
             range: new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0))
@@ -807,9 +811,9 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
 }
 
 function provideDocumentSymbols(document: vscode.TextDocument): vscode.DocumentSymbol[] {
-    let filename = getFileRelativePath(document.uri);
+    const filename = getFileRelativePath(document.uri);
 
-    let output: vscode.DocumentSymbol[] = [];
+    const output: vscode.DocumentSymbol[] = [];
 
     for (const define of getMacroDefine(filename, -1, false)) {
         output.push(new vscode.DocumentSymbol(define.name, define.detail || "",
@@ -834,8 +838,8 @@ function lpcCompile() {
     if (vscode.window.activeTextEditor === undefined) {
         return;
     }
-    let relativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
-    let cmd = `bash -i -c 'cd ${projectFolder}; ${complieCommand} ${relativePath} 2>&1'`;
+    const relativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
+    const cmd = `bash -i -c 'cd ${projectFolder}; ${complieCommand} ${relativePath} 2>&1'`;
     child_process.exec(cmd, function (error: any, stdout: string, stderr: string) {
         vscode.window.showQuickPick(stdout.split("\n"), { "placeHolder": "press ESC to exit" });
     });
@@ -845,7 +849,7 @@ function lpcTailDebug(tailLine: number) {
     if (vscode.window.activeTextEditor === undefined) {
         return;
     }
-    let cmd = `cd ${projectFolder} && tail -n ${tailLine} log/debug.log`;
+    const cmd = `cd ${projectFolder} && tail -n ${tailLine} log/debug.log`;
     child_process.exec(cmd, function (error: any, stdout: string, stderr: string) {
         vscode.window.showQuickPick(stdout.split("\n"), { "placeHolder": "press ESC to exit" });
     });
@@ -855,8 +859,8 @@ function lpcUpdateFile() {
     if (vscode.window.activeTextEditor === undefined) {
         return;
     }
-    let updateRelativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
-    let etcFilePath = path.resolve(projectFolder, "etc", "update");
+    const updateRelativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
+    const etcFilePath = path.resolve(projectFolder, "etc", "update");
     if (!fs.existsSync(etcFilePath)) {
         vscode.window.showErrorMessage("etc/update file not exit. update fail!!");
         return;
@@ -876,15 +880,15 @@ function lpcCallFunc() {
     if (vscode.window.activeTextEditor === undefined) {
         return;
     }
-    let updateRelativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
+    const updateRelativePath = vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri);
     const etcFilePath = path.resolve(projectFolder, "etc", "update");
     if (!fs.existsSync(etcFilePath)) {
         vscode.window.showErrorMessage("etc/update file not exit. run func fail!!");
         return;
     }
     else {
-        var editor = vscode.window.activeTextEditor;
-        var selectText = editor.document.getText(editor.selection);
+        const editor = vscode.window.activeTextEditor;
+        let selectText = editor.document.getText(editor.selection);
         if (typeof selectText === "string" && selectText.length > 0) {
             selectText = selectText + " ";
         } else {
@@ -918,4 +922,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
 }
 
-export function deactivate() { }
+export function deactivate() {
+    debug("lpcd deactivate");
+}

@@ -101,7 +101,12 @@
                 "path": "./syntaxes/lpc.tmLanguage"
             }
         ],
-        "snippets": [],
+        "snippets": [
+            {
+                "language": "lpc",
+                "path": "./snippets/lpc-snippets.json"
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "lpcd configuration",
