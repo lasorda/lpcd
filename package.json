@@ -2,7 +2,7 @@
     "name": "lpcd",
     "displayName": "lpcd",
     "description": "A LPC language's Highlights, Snippets, Completion and Definition-Jump Plugin.",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "license": "MIT",
     "publisher": "panzhihao",
     "repository": "https://github.com/lasorda/lpcd",
@@ -129,8 +129,8 @@
                 "lpcd.efunc": {
                     "type": "array",
                     "default": [
-                        "/etc/efun_define.c",
-                        "/sys/object/simul_efun.c"
+                        "/sys/object/simul_efun.c",
+                        "/etc/efun_define.c"
                     ],
                     "description": "efun_define for engine defined function, simul_efun for global function"
                 },

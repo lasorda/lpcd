@@ -8,7 +8,7 @@ import * as scanf from 'scanf';
 const cocLpcConfig = vscode.workspace.getConfiguration('lpcd');
 const workspaceStr = cocLpcConfig.get<string>("workspace", "newtxii");
 const complieCommand = cocLpcConfig.get<string>("complie", "lpc_compile");
-const efuncObjects = cocLpcConfig.get<Array<string>>('efunc', ["/etc/efun_define.c", "/sys/object/simul_efun.c"]);
+const efuncObjects = cocLpcConfig.get<Array<string>>('efunc', ["/sys/object/simul_efun.c", "/etc/efun_define.c"]);
 
 let projectFolder = "";
 let inc = "";
@@ -42,6 +42,7 @@ function initProjectFolder() {
 function complie(filename: string): boolean {
     try {
         // too ugly
+        child_process.execSync(`bash -i -c 'cd ${projectFolder}; mkdir -p log && touch log/debug.log'`, { stdio: "pipe" });
         child_process.execSync(`bash -i -c 'cd ${projectFolder}; mv log/debug.log log/bak.log; ${complieCommand} ${filename}; mv log/debug.log log/complie.log ; mv log/bak.log log/debug.log'`, { stdio: "pipe" });
         return true;
     } catch (e) {
@@ -697,6 +698,7 @@ function provideDefinition(document: vscode.TextDocument, position: vscode.Posit
                 };
             }
         }
+        return;
     }
 
     // #include <
