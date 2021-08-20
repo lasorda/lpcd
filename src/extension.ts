@@ -616,7 +616,7 @@ function getRangeofWordInFileLine(filename: string, line: number, word: string):
     if (line < filelines.length && filename.length > 0) {
         const linePos = searchInLine(filelines[line], word);
         res.start.character = linePos;
-        res.start.character = linePos;
+        res.end.character = linePos + word.length;
     }
     return new vscode.Range(new vscode.Position(res.start.line, res.start.character), new vscode.Position(res.end.line, res.end.character));
 }
