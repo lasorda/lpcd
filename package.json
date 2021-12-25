@@ -2,7 +2,7 @@
     "name": "lpcd",
     "displayName": "lpcd",
     "description": "A LPC language's Highlights, Snippets, Completion and Definition-Jump Plugin.",
-    "version": "0.0.8",
+    "version": "1.2.3",
     "license": "MIT",
     "publisher": "panzhihao",
     "repository": "https://github.com/lasorda/lpcd",
@@ -18,63 +18,7 @@
     ],
     "main": "./out/extension.js",
     "contributes": {
-        "keybindings": [
-            {
-                "command": "lpcd.compile",
-                "key": "f5",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.update_file",
-                "key": "f6",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_1000",
-                "key": "f9",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.call_func",
-                "key": "f10",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_10",
-                "key": "alt+1",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_20",
-                "key": "alt+2",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_40",
-                "key": "alt+3",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_80",
-                "key": "alt+4",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_160",
-                "key": "alt+5",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_320",
-                "key": "alt+6",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "lpcd.remote_tail_debug_640",
-                "key": "alt+7",
-                "when": "editorTextFocus"
-            }
-        ],
+        "keybindings": [],
         "configurationDefaults": {
             "[lpc]": {
                 "editor.snippetSuggestions": "bottom"
